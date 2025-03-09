@@ -4,6 +4,32 @@ import { useState } from "react";
 
 const Counter = (props) => {
   const [count, setCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleCounterAction = async (action) => {
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/counter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action,
+          counterId: props.title,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update counter value");
+
+      setCount((prev) => (action === "increment" ? prev + 1 : prev - 1));
+    } catch (error) {
+      console.log("Error updating counter:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div>
@@ -12,8 +38,9 @@ const Counter = (props) => {
         <button
           className="btn btn-circle"
           onClick={() => {
-            setCount((prev) => prev - 1);
+            handleCounterAction("decrement");
           }}
+          disabled={isLoading}
         >
           -
         </button>
@@ -21,8 +48,9 @@ const Counter = (props) => {
         <button
           className="btn btn-circle"
           onClick={() => {
-            setCount((prev) => prev + 1);
+            handleCounterAction("increment");
           }}
+          disabled={isLoading}
         >
           +
         </button>
